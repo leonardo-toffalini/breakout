@@ -4,14 +4,10 @@ local Ball = Object:extend()
 local window_width, window_height = love.graphics.getDimensions()
 
 function Ball:new()
-  self.x = window_width / 2
-  self.y = window_height / 2
+  self:reset_pos()
   self.width = 5
   self.height = 5
-  -- 2 * math.random(0, 1) - 1 generates -1 or 1 with 0.5 - 0.5 probability
-  self.x_speed = math.random(200, 220) * (2 * math.random(0, 1) - 1)
-  self.y_speed = math.random(200, 220)
-
+  self:reset_speed()
   self.respawn_counter = 0
 end
 
@@ -24,6 +20,11 @@ end
 function Ball:paddle_hit(player)
   if self:check_collision(player) then
     self.y_speed = -self.y_speed
+    if love.keyboard.isDown("left") then
+      self.x_speed = self.x_speed - 0.3 * player.speed
+    elseif love.keyboard.isDown("right") then
+      self.x_speed = self.x_speed + 0.3 * player.speed
+    end
   end
 end
 
@@ -42,14 +43,21 @@ function Ball:check_boundaries()
   end
   if self.y + self.height > love.graphics.getHeight() then
     -- ball went out of screen on the bottom
-    self.x = window_width / 2
-    self.y = window_height / 2
-    -- 2 * math.random(0, 1) - 1 generates -1 or 1 with 0.5 - 0.5 probability
-    self.x_speed = math.random(100, 250) * (2 * math.random(0, 1) - 1)
-    self.y_speed = math.random(100, 250) * (2 * math.random(0, 1) - 1)
-
+    self:reset_pos()
+    self:reset_speed()
     self.respawn_counter = self.respawn_counter + 1
   end
+end
+
+function Ball:reset_pos()
+  self.x = window_width / 2
+  self.y = window_height / 2
+end
+
+function Ball:reset_speed()
+  local angle = math.random(0, 6.28)
+  self.x_speed = 200 * math.cos(angle)
+  self.y_speed = - 200 * math.sin(angle)
 end
 
 function Ball:check_collision(other)
